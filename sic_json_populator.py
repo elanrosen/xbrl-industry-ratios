@@ -1,10 +1,21 @@
 import csv
 from datetime import datetime
+import os
 import requests
 import json
+from dotenv import load_dotenv
 import xbrl_api
 
-def process_csv_with_xbrl_api(email, password, clientid, secret):
+# Load environment variables from .env file
+load_dotenv()
+
+def process_csv_with_xbrl_api():
+    # Retrieve credentials from environment variables
+    email = os.getenv('XBRL_EMAIL')
+    password = os.getenv('XBRL_PASSWORD')
+    clientid = os.getenv('XBRL_CLIENT_ID')
+    secret = os.getenv('XBRL_SECRET')
+
     # Authenticate and get access token
     access_token, refresh_token = xbrl_api.authenticate(email, password, clientid, secret)
     if access_token:
@@ -59,14 +70,8 @@ def retrieve_sic_code(ticker, date, access_token):
 
 
 def main():
-    # Define email, password, clientid, and secret
-    email = 'earosen@umich.edu'
-    password = '2xaSqNRJUE'
-    clientid = 'b11a58ba-ea3f-4b61-9e80-f1afdc9545cc'
-    secret = '5a765c86-77a5-469a-ac54-4ec70e7d52d1'
-
     # Process CSV with XBRL API
-    sic_code_dict = process_csv_with_xbrl_api(email, password, clientid, secret)
+    sic_code_dict = process_csv_with_xbrl_api()
     print("SIC Code Dictionary:")
     print(sic_code_dict)
 

@@ -29,12 +29,18 @@ for sic_date, reports in report_data_v2.items():
 def calculate_book_leverage(report):
     total_debt = report[5] if report[5] is not None else 0
     total_assets = report[4]
-
     if total_assets is None or total_assets == 0:
         return None  # Indicate invalid or incomplete data for this calculation
 
     return total_debt / total_assets
 
+def calculate_debt_to_equity(report):
+    total_debt = report[5] if report[5] is not None else 0
+    total_equity = report[1]
+    if total_equity is None or total_equity == 0:
+        return None  # Indicate invalid or incomplete data for this calculation
+
+    return total_debt / total_equity
 
 def calculate_market_leverage(report):
     # Placeholder for market leverage calculation

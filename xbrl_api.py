@@ -1,5 +1,10 @@
+import os
+from dotenv import load_dotenv
 import requests
 from urllib.parse import urlencode
+
+# Load environment variables from .env file
+load_dotenv()
 
 def authenticate(email, password, clientid, secret):
     body_auth = {
@@ -27,10 +32,14 @@ def authenticate(email, password, clientid, secret):
     
     
 def get_access_token():
-    email = 'earosen@umich.edu'
-    password = '2xaSqNRJUE'
-    clientid = 'b11a58ba-ea3f-4b61-9e80-f1afdc9545cc'
-    secret = '5a765c86-77a5-469a-ac54-4ec70e7d52d1'
+    email = os.getenv('XBRL_EMAIL')
+    password = os.getenv('XBRL_PASSWORD')
+    clientid = os.getenv('XBRL_CLIENT_ID')
+    secret = os.getenv('XBRL_SECRET')
+    
+    if not all([email, password, clientid, secret]):
+        print("Please ensure all XBRL environment variables are set.")
+        return None
     
     # Call authenticate function and return the access token
     access_token, _ = authenticate(email, password, clientid, secret)

@@ -1,7 +1,12 @@
+import os
 import psycopg2
 import pandas as pd
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def get_fiscal_quarter_dates(date):
     date = pd.Timestamp(date)
@@ -25,17 +30,17 @@ params = {
     'host': 'public.xbrl.us',
     'port': '5432',
     'database': 'edgar_db',
-    'user': 'xuspwr250',
-    'password': 'lwiAJZhJQhssXI#'
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD')
 }
 
 # Iterate over each row in the tickers DataFrame
 for index, row in tickers_df.iterrows():
     spinoff_ticker = row['Spinoff']
-    sic_code = sic_code_mapping.get(spinoff_ticker, 'N/A')
-    if sic_code == 'N/A':
+    sic_code_4digit = sic_code_mapping.get(spinoff_ticker, 'N/A')
+    if sic_code_4digit == 'N/A':
         continue  # Skip this ticker and continue to the next
-    
+    sic_code_3digit = str(sic_code_4digit)[:3]
     # Convert date to fiscal quarter
     start_date, end_date = get_fiscal_quarter_dates(row['Date'])
     
@@ -45,7 +50,7 @@ for index, row in tickers_df.iterrows():
     FROM report
     WHERE report.reporting_period_end_date >= '{start_date}'
     AND report.reporting_period_end_date <= '{end_date}'
-    AND (report.properties->>'standard_industrial_classification')::text LIKE '{sic_code}%'
+    AND (report.properties->>'standard_industrial_classification')::text LIKE '{sic_code_3digit}%'
     AND report.source_id = (SELECT source_id FROM source WHERE source_name = 'SEC')
     AND report.properties->>'document_type' IN ('10-Q', '10-K');
     """
@@ -57,7 +62,7 @@ for index, row in tickers_df.iterrows():
                 cursor.execute(sql_query)
                 rows = cursor.fetchall()
                 # Key for storing in the dictionary
-                key = f"{sic_code}_{pd.Timestamp(row['Date']).quarter}Q{pd.Timestamp(row['Date']).year}"
+                key = f"{sic_code_3digit}_{pd.Timestamp(row['Date']).quarter}Q{pd.Timestamp(row['Date']).year}"
                 # Update this line to include document type
                 report_data[key] = [{'report_id': report_id, 'document_type': document_type} for report_id, _, _, document_type in rows]
     except (Exception, psycopg2.DatabaseError) as error:
@@ -67,4 +72,4 @@ for index, row in tickers_df.iterrows():
 with open('report_data_v2.json', 'w') as json_file:
     json.dump(report_data, json_file, indent=4)  # Use indent for better readability
 
-print("Operation completed, data saved to 'report_data.json'.")
+print("Operation completed, data saved to 'report_data_v2.json'.")
