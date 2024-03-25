@@ -24,6 +24,7 @@ concept_names = [
     'JuniorSubordinatedNotes',
     'MediumTermNotes',
     'DebtCurrent',
+    'DebtNoncurrent',
     'LongTermDebtAndCapitalLeaseObligations',
     'Liabilities',
     'LiabilitiesCurrent',
