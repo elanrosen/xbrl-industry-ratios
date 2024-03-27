@@ -1,15 +1,16 @@
 import subprocess
 import os
+
 # Define the steps as a list of dictionaries for clarity and easy updates.
 steps = [
-    {"script": "populate_sic_codes_from_tickers.py", "args": ["tickers.csv", "ticker_to_sic_code_mapping.json"]},
-    {"script": "find_reports_by_sic_and_date.py", "args": ["tickers.csv", "ticker_to_sic_code_mapping.json", "reports_by_sic_and_date_mapping.json"]},
-    {"script": "load_reports_into_database.py", "args": ["reports_by_sic_and_date_mapping.json", "industry_reports_database.db"]},
-    {"script": "calculate_industry_ratios_and_export.py", "args": ["industry_reports_database.db", "industry_ratios_analysis.xlsx"]},
-    {"script": "export_ticker_sic_to_excel.py", "args": ["ticker_to_sic_code_mapping.json", "ticker_sic_reference.xlsx"]}
+    {"script": "populate_sic_codes_from_tickers.py", "args": ["data/input/tickers.csv", "data/output/ticker_to_sic_code_mapping.json"]},
+    {"script": "find_reports_by_sic_and_date.py", "args": ["data/input/tickers.csv", "data/output/ticker_to_sic_code_mapping.json", "data/output/reports_by_sic_and_date_mapping.json"]},
+    {"script": "load_reports_into_database.py", "args": ["data/output/reports_by_sic_and_date_mapping.json", "data/output/industry_reports_database.db"]},
+    {"script": "calculate_industry_ratios_and_export.py", "args": ["data/output/industry_reports_database.db", "data/output/industry_ratios_analysis.xlsx"]},
+    {"script": "export_ticker_sic_to_excel.py", "args": ["data/output/ticker_to_sic_code_mapping.json", "data/output/reference/ticker_sic_reference.xlsx"]}
 ]
 
-progress_file = "script_progress.txt"
+progress_file = "progress/script_progress.txt"
 
 def run_script(script_name, args):
     """
@@ -51,7 +52,7 @@ def main():
             continue
         
         print(f"Running step {i+1}/{len(steps)}: {step['script']}")
-        run_script(step['script'], step['args'])
+        run_script(os.path.join("scripts", step['script']), step['args'])
         
         # Save progress after successful completion of the step
         save_progress(i)

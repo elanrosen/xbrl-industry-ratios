@@ -1,3 +1,4 @@
+# calculate_industry_ratios_and_export.py is a Python script that reads data from a SQLite database and a JSON file, calculates industry ratios, and exports the results to a CSV file. The script performs the following steps:
 import sqlite3
 import pandas as pd
 import json

@@ -1,3 +1,4 @@
+# find_reports_by_sic_and_date.py is a Python script that reads a CSV file containing a list of spinoff tickers and dates,
 import os
 import psycopg2
 import pandas as pd
