@@ -1,6 +1,7 @@
 # Import necessary libraries
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, Table, Column, Integer, Float, String, MetaData
 from xbrl_helpers import find_concepts
@@ -9,16 +10,16 @@ from concepts import concept_names  # Importing concept_names from concepts.py
 
 # Constants
 PROGRESS_FILE_PATH = 'progress.json'
-DATABASE_URL = 'sqlite:///reports_v5.db'  # Modify as necessary
 
 # Load and save progress functions
 def load_progress():
-    """Loads progress from a JSON file."""
-    if os.path.exists(PROGRESS_FILE_PATH):
-        with open(PROGRESS_FILE_PATH, 'r') as file:
-            return json.load(file)
-    else:
-        return {"start_index": 0, "keys_seen": {}}
+    """Loads progress from a JSON file. Creates one with default state if not found."""
+    default_progress = {"start_index": 0, "keys_seen": {}}
+    if not os.path.exists(PROGRESS_FILE_PATH):
+        save_progress(default_progress['start_index'], default_progress['keys_seen'])
+    with open(PROGRESS_FILE_PATH, 'r') as file:
+        return json.load(file)
+
 
 def save_progress(start_index, keys_seen):
     """Saves progress to a JSON file."""
@@ -27,7 +28,7 @@ def save_progress(start_index, keys_seen):
         json.dump(progress_data, file)
 
 # Database initialization
-def initialize_database(concept_names, database_url=DATABASE_URL):
+def initialize_database(concept_names, database_url):
     """Initializes the database with the specified structure."""
     engine = create_engine(database_url)
     metadata = MetaData()
@@ -42,9 +43,9 @@ def initialize_database(concept_names, database_url=DATABASE_URL):
     return engine, reports_table
 
 # Process reports
-def process_reports(report_data, concept_names):
+def process_reports(report_data, concept_names, database_url):
     """Processes the reports, updating the database accordingly."""
-    engine, reports_table = initialize_database(concept_names)
+    engine, reports_table = initialize_database(concept_names, database_url)
     access_token = xbrl_api.get_access_token()
     last_refreshed = datetime.now()
 
@@ -90,8 +91,15 @@ def process_reports(report_data, concept_names):
             save_progress(idx + 1, keys_seen)
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python database_loader.py <report_data_json_file> <database_url>")
+        sys.exit(1)
+
+    report_data_file = sys.argv[1]
+    database_url = sys.argv[2]
+
     # Load your JSON data into report_data
-    with open('report_data_v2.json', 'r') as file:
+    with open(report_data_file, 'r') as file:
         report_data = json.load(file)
 
-    process_reports(report_data, concept_names)
+    process_reports(report_data, concept_names, database_url)
