@@ -1,0 +1,15 @@
+# calculate_industry_ratios_and_export.py
+pandas
+sqlite3
+json
+psycopg2
+dotenv
+
+# load_reports_into_database.py
+json
+sqlalchemy
+requests
+
+# General dependencies
+requests
+dotenv
